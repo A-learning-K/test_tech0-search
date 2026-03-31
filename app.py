@@ -191,6 +191,56 @@ with tab_list:
 
 # ── 投稿タブ ───────────────────────────────────────────────────
 with tab_post:
+    
+        
+    # お呼び出し閾値（デモ用に低め設定）
+    OYOBIDASHI_THRESHOLD = 3  # 本番は100
+    
+    # お呼び出しフラグ { post_index: True/False }
+    if "oyobidashi_flags" not in st.session_state:
+        st.session_state["oyobidashi_flags"] = {}
+    
+
+     # ── お呼び出し通知（フラグが立っていたら一番上に表示） ──
+    for post_index, flagged in list(st.session_state["oyobidashi_flags"].items()):
+        if not flagged:
+            continue
+
+        # 対象の投稿を取得する
+        post = posts[post_index]
+
+        with st.container(border=True):
+            st.markdown("##### 📣 黒崎からのお呼び出し")
+            st.caption("黒崎 誠一郎　執行役員 / 経営企画担当")
+            st.write("あなたの提案に注目しています。")
+            st.write("詳しくお話を聞かせてください。")
+            st.write("下記の日時に私の部屋までお越しください。")
+
+            # 日時カード
+            with st.container(border=True):
+                st.write("🗓　12月5日（木）14:00")
+                st.caption("黒崎執行役員室（本館5F）")
+
+            # 対象投稿
+            with st.container(border=True):
+                st.caption("対象スレッド")
+                st.write(post["commeent"][:40] + "…")
+
+            # 返答ボタン
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button("後で確認する", key=f"later_{post_index}"):
+                    # フラグを折りたたんで通知を非表示にする
+                    st.session_state["oyobidashi_flags"][post_index] = False
+                    st.rerun()
+            with col2:
+                if st.button("承知しました ✓", key=f"accept_{post_index}"):
+                    # フラグを消して通知を非表示にする
+                    st.session_state["oyobidashi_flags"][post_index] = False
+                    st.success("承知しました！当日お伺いします。")
+                    st.rerun()
+
+    st.divider()
 
     # ── 投稿フォーム ──────────────────────────────────────────
     with st.form("post_form", clear_on_submit=True):
@@ -248,19 +298,21 @@ with tab_hot:
             else:
                 name = post["name"]
 
-            with st.container(border=True):
-                st.write(f"{post['commeent']}")
-                st.write(f"投稿者：{name}")
-                st.write(f"👍いいね数：{post['good']}")
-                
-                # 件名と本文をURLエンコードする（日本語対応）
-                subject = urllib.parse.quote("【Tech0 Search】あなたの投稿について")
-                body    = urllib.parse.quote("投稿を見ました。ぜひお話しましょう。\n\n黒崎CDO")
+            # お呼び出しボタン（閾値を超えた投稿のみ表示）
+            if post["good"] >= OYOBIDASHI_THRESHOLD:
+                st.divider()
+                # 対象投稿のインデックスを特定する
+                post_index = posts.index(post)
+                already_sent = st.session_state["oyobidashi_flags"].get(post_index, False)
 
-                # 今回は宛先はダミーのアドレスとする
-                mailto = f"mailto:xxxxx@techzeron.com?subject={subject}&body={body}"
-
-                st.link_button("📩 メッセージを送る", mailto)
+            if already_sent:
+                st.success("📣 お呼び出し済み")
+            else:
+                if st.button("📣 お呼び出しを送る", key=f"hot_oyobidashi_{post_index}"):
+                    # フラグを立てる
+                        st.session_state["oyobidashi_flags"][post_index] = True
+                        st.toast("お呼び出しを送りました", icon="📣")
+                        st.rerun()
                 
 
 st.divider()
