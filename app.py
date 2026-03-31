@@ -299,17 +299,17 @@ with tab_hot:
                 name = post["name"]
 
             # お呼び出しボタン（閾値を超えた投稿のみ表示）
-        if post["good"] >= OYOBIDASHI_THRESHOLD:
-            post_index = posts.index(post)
-            already_sent = st.session_state["oyobidashi_flags"].get(post_index, False)
+            if post["good"] >= OYOBIDASHI_THRESHOLD:
+                post_index = posts.index(post)
+                already_sent = st.session_state["oyobidashi_flags"].get(post_index, False)
 
-            if already_sent:
-                st.success("📣 お呼び出し済み")
-            else:
-                if st.button("📣 お呼び出しを送る", key=f"hot_oyobidashi_{rank}"):
-                    st.session_state["oyobidashi_flags"][post_index] = True
-                    st.toast("お呼び出しを送りました", icon="📣")
-                    st.rerun()
+                if already_sent:
+                    st.success("📣 お呼び出し済み")
+                else:
+                    if st.button("📣 お呼び出しを送る", key=f"hot_oyobidashi_{rank}"):
+                        st.session_state["oyobidashi_flags"][post_index] = True
+                        st.toast("お呼び出しを送りました", icon="📣")
+                        st.rerun()
                 
 
 st.divider()
