@@ -308,7 +308,7 @@ with tab_hot:
             if already_sent:
                 st.success("📣 お呼び出し済み")
             else:
-                if st.button("📣 お呼び出しを送る", key=f"oyobidashi_{post_index}"):
+                if st.button("📣 お呼び出しを送る", key=f"hot_oyobidashi_{post_index}"):
                     # フラグを立てる
                         st.session_state["oyobidashi_flags"][post_index] = True
                         st.toast("お呼び出しを送りました", icon="📣")
